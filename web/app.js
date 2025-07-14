@@ -115,58 +115,18 @@ const PDFViewerApplication = {
   pdfDocument: null,
   /** @type {PDFDocumentLoadingTask} */
   pdfLoadingTask: null,
-  printService: null,
   /** @type {PDFViewer} */
   pdfViewer: null,
-  /** @type {PDFThumbnailViewer} */
-  pdfThumbnailViewer: null,
   /** @type {PDFRenderingQueue} */
   pdfRenderingQueue: null,
-  /** @type {PDFPresentationMode} */
-  pdfPresentationMode: null,
-  /** @type {PDFDocumentProperties} */
-  pdfDocumentProperties: null,
   /** @type {PDFLinkService} */
   pdfLinkService: null,
-  /** @type {PDFHistory} */
-  pdfHistory: null,
-  /** @type {PDFSidebar} */
-  pdfSidebar: null,
-  /** @type {PDFOutlineViewer} */
-  pdfOutlineViewer: null,
-  /** @type {PDFAttachmentViewer} */
-  pdfAttachmentViewer: null,
-  /** @type {PDFLayerViewer} */
-  pdfLayerViewer: null,
-  /** @type {PDFCursorTools} */
-  pdfCursorTools: null,
-  /** @type {PDFScriptingManager} */
-  pdfScriptingManager: null,
-  /** @type {ViewHistory} */
-  store: null,
-  /** @type {DownloadManager} */
-  downloadManager: null,
-  /** @type {OverlayManager} */
-  overlayManager: null,
-  /** @type {Preferences} */
-  preferences: new Preferences(),
-  /** @type {Toolbar} */
-  toolbar: null,
-  /** @type {SecondaryToolbar} */
-  secondaryToolbar: null,
   /** @type {EventBus} */
   eventBus: null,
-  /** @type {IL10n} */
-  l10n: null,
-  /** @type {AnnotationEditorParams} */
-  annotationEditorParams: null,
-  /** @type {ImageAltTextSettings} */
-  imageAltTextSettings: null,
   isInitialViewSet: false,
   isViewerEmbedded: window.parent !== window,
   url: "",
   baseUrl: "",
-  mlManager: null,
   _downloadUrl: "",
   _eventBusAbortController: null,
   _windowAbortController: null,
@@ -181,92 +141,41 @@ const PDFViewerApplication = {
   _touchManager: null,
   _touchUnusedTicks: 0,
   _touchUnusedFactor: 1,
-  _PDFBug: null,
-  _hasAnnotationEditors: false,
   _title: document.title,
-  _printAnnotationStoragePromise: null,
-  _isCtrlKeyDown: false,
-  _caretBrowsing: null,
-  _isScrolling: false,
-  editorUndoBar: null,
 
   // Called once when the document is loaded.
   async initialize(appConfig) {
     this.appConfig = appConfig;
-
-    // Ensure that `Preferences`, and indirectly `AppOptions`, have initialized
-    // before creating e.g. the various viewer components.
-    try {
-      await this.preferences.initializedPromise;
-    } catch (ex) {
-      console.error("initialize:", ex);
-    }
-    if (AppOptions.get("pdfBugEnabled")) {
-      await this._parseHashParams();
-    }
-
-    let mode;
-    switch (AppOptions.get("viewerCssTheme")) {
-      case 1:
-        mode = "light";
-        break;
-      case 2:
-        mode = "dark";
-        break;
-    }
-    if (mode) {
-      docStyle.setProperty("color-scheme", mode);
-    }
-
-    if (typeof PDFJSDev === "undefined" || PDFJSDev.test("TESTING")) {
-      if (AppOptions.get("enableFakeMLManager")) {
-        this.mlManager =
-          MLManager.getFakeMLManager?.({
-            enableGuessAltText: AppOptions.get("enableGuessAltText"),
-            enableAltTextModelDownload: AppOptions.get(
-              "enableAltTextModelDownload"
-            ),
-          }) || null;
-      }
-    } else if (PDFJSDev.test("MOZCENTRAL")) {
-      if (AppOptions.get("enableAltText")) {
-        // We want to load the image-to-text AI engine as soon as possible.
-        this.mlManager = new MLManager({
-          enableGuessAltText: AppOptions.get("enableGuessAltText"),
-          enableAltTextModelDownload: AppOptions.get(
-            "enableAltTextModelDownload"
-          ),
-          altTextLearnMoreUrl: AppOptions.get("altTextLearnMoreUrl"),
-        });
-      }
-    }
-
-    // Ensure that the `L10n`-instance has been initialized before creating
-    // e.g. the various viewer components.
-    this.l10n = await this.externalServices.createL10n();
-    document.getElementsByTagName("html")[0].dir = this.l10n.getDirection();
-    // Connect Fluent, when necessary, and translate what we already have.
-    if (typeof PDFJSDev === "undefined" || !PDFJSDev.test("MOZCENTRAL")) {
-      this.l10n.translate(appConfig.appContainer || document.documentElement);
-    }
-
-    if (
-      this.isViewerEmbedded &&
-      AppOptions.get("externalLinkTarget") === LinkTarget.NONE
-    ) {
-      // Prevent external links from "replacing" the viewer,
-      // when it's embedded in e.g. an <iframe> or an <object>.
-      AppOptions.set("externalLinkTarget", LinkTarget.TOP);
-    }
-    await this._initializeViewerComponents();
-
-    // Bind the various event handlers *after* the viewer has been
-    // initialized, to prevent errors if an event arrives too soon.
+    this.eventBus = new EventBus();
+    const renderingQueue = (this.pdfRenderingQueue = new PDFRenderingQueue());
+    const linkService = (this.pdfLinkService = new PDFLinkService({
+      eventBus: this.eventBus,
+    }));
+    const container = appConfig.mainContainer,
+      viewer = appConfig.viewerContainer;
+    const pdfViewer = (this.pdfViewer = new PDFViewer({
+      container,
+      viewer,
+      eventBus: this.eventBus,
+      renderingQueue,
+      linkService,
+    }));
+    renderingQueue.setViewer(pdfViewer);
+    linkService.setViewer(pdfViewer);
     this.bindEvents();
-    this.bindWindowEvents();
-
     this._initializedCapability.settled = true;
     this._initializedCapability.resolve();
+  },
+
+  bindEvents() {
+    if (this._eventBusAbortController) {
+      return;
+    }
+    const ac = (this._eventBusAbortController = new AbortController());
+    const opts = { signal: ac.signal };
+    const { eventBus, pdfViewer } = this;
+    eventBus._on("nextpage", () => pdfViewer.nextPage(), opts);
+    eventBus._on("previouspage", () => pdfViewer.previousPage(), opts);
   },
 
   /**
