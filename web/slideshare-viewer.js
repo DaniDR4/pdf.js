@@ -1,7 +1,7 @@
 import { getDocument, GlobalWorkerOptions } from './pdfjs.js';
 
-// Set workerSrc to the default location
-GlobalWorkerOptions.workerSrc = './pdf.worker.js';
+// Set workerSrc to the correct location (src directory)
+GlobalWorkerOptions.workerSrc = '../src/pdf.worker.js';
 
 const urlParams = new URLSearchParams(window.location.search);
 const file = urlParams.get('file') || '7bridges.pdf';
