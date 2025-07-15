@@ -6436,37 +6436,3 @@ dialog :link{
     display:none;
   }
 }
-
-#outerContainer,
-#viewerContainer,
-#viewer {
-  background: #111 !important;
-  height: 100vh !important;
-  width: 100vw !important;
-  overflow: hidden;
-}
-
-#viewerContainer {
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
-
-/* hide all UI elements */
-#toolbarContainer,
-#sidebarContainer,
-#secondaryToolbar,
-#findbar,
-#viewOutline,
-#viewAttachments,
-#toolbarViewerRight,
-#presentationMode,
-#openFile,
-#print,
-#download,
-#viewBookmark {
-  display: none !important;
-}
