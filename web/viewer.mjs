@@ -7265,7 +7265,7 @@ class PDFPresentationMode {
         this.pdfViewer.spreadMode = SpreadMode.NONE;
       }
       this.pdfViewer.currentPageNumber = this.#args.pageNumber;
-      this.pdfViewer.currentScaleValue = "page-width";
+      this.pdfViewer.currentScaleValue = "page-fit";
       if (this.#args.annotationEditorMode !== null) {
         this.pdfViewer.annotationEditorMode = {
           mode: AnnotationEditorType.NONE

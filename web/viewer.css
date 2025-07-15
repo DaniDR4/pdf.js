@@ -6437,13 +6437,6 @@ dialog :link{
   }
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background: #111 !important; /* match presentation mode background */
-}
-
 #outerContainer,
 #viewerContainer,
 #viewer {
@@ -6456,19 +6449,10 @@ html, body {
 #viewerContainer {
   overflow-x: auto !important;
   overflow-y: hidden !important;
-  scroll-snap-type: x mandatory; /* enable snap scrolling */
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-}
-
-.page {
-  margin: auto;
-  scroll-snap-align: center;
-  flex-shrink: 0;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
-  background: white;
 }
 
 /* hide all UI elements */
