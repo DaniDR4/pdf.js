@@ -7265,7 +7265,7 @@ class PDFPresentationMode {
         this.pdfViewer.spreadMode = SpreadMode.NONE;
       }
       this.pdfViewer.currentPageNumber = this.#args.pageNumber;
-      this.pdfViewer.currentScaleValue = "page-fit";
+      this.pdfViewer.currentScaleValue = "page-width";
       if (this.#args.annotationEditorMode !== null) {
         this.pdfViewer.annotationEditorMode = {
           mode: AnnotationEditorType.NONE
@@ -17067,9 +17067,6 @@ function webViewerLoad() {
 document.blockUnblockOnload?.(true);
 if (document.readyState === "interactive" || document.readyState === "complete") {
   webViewerLoad();
-  PDFViewerApplication.eventBus._on("documentloaded", function () {
-    PDFViewerApplication.requestPresentationMode();
-  });
 } else {
   document.addEventListener("DOMContentLoaded", webViewerLoad, true);
 }
