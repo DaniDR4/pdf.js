@@ -68,6 +68,35 @@
 }
   }
 
+
+  /* Hide all toolbars, sidebar, buttons */
+#toolbarContainer,
+#secondaryToolbar,
+#sidebarContainer,
+#viewBookmark,
+#openFile,
+#print,
+#download,
+#viewOutline,
+#viewAttachments,
+#viewLayers,
+#toolbarViewerRight,
+#toolbarSidebar {
+  display: none !important;
+}
+
+/* Make the viewer full-height */
+#viewerContainer {
+  top: 0 !important;
+  height: 100% !important;
+}
+
+/* Optional: prevent overflow scrollbars */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
 .messageBar{
 
   display:flex;
