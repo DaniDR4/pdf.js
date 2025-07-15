@@ -802,15 +802,15 @@ const defaultOptions = {
     kind: OptionKind.VIEWER
   },
   sidebarViewOnLoad: {
-    value: -1,
+    value: 0,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   },
   scrollModeOnLoad: {
-    value: -1,
+    value: 1,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   },
   spreadModeOnLoad: {
-    value: -1,
+    value: 0,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   },
   textLayerMode: {
@@ -1476,9 +1476,9 @@ class BasePreferences {
     pageColorsBackground: "Canvas",
     pageColorsForeground: "CanvasText",
     pdfBugEnabled: false,
-    sidebarViewOnLoad: -1,
-    scrollModeOnLoad: -1,
-    spreadModeOnLoad: -1,
+    sidebarViewOnLoad: 0,
+    scrollModeOnLoad: 1,
+    spreadModeOnLoad: 0,
     textLayerMode: 1,
     viewerCssTheme: 0,
     viewOnLoad: 0,
