@@ -733,43 +733,5 @@ See https://github.com/adobe-type-tools/cmap-resources
 
     </div> <!-- outerContainer -->
     <div id="printContainer"></div>
-    <div id="slideNav" style="position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
-  background: rgba(0,0,0,0.6); color: white; padding: 6px 12px; border-radius: 20px; font-family: sans-serif; z-index: 9999;">
-  <button id="prevPage" style="background:none;border:none;color:white;font-size:16px;">←</button>
-  <span id="pageNum">1</span> of <span id="pageCount">?</span>
-  <button id="nextPage" style="background:none;border:none;color:white;font-size:16px;">→</button>
-</div>
-<script>
-  document.addEventListener('webviewerloaded', function () {
-    const app = window.PDFViewerApplication;
-
-    function updateNav() {
-      document.getElementById('pageNum').textContent = app.page;
-      document.getElementById('pageCount').textContent = app.pdfDocument.numPages;
-    }
-
-    app.initializedPromise.then(() => {
-      updateNav();
-
-      document.getElementById('prevPage').addEventListener('click', () => {
-        if (app.page > 1) {
-          app.page--;
-          updateNav();
-        }
-      });
-
-      document.getElementById('nextPage').addEventListener('click', () => {
-        if (app.page < app.pdfDocument.numPages) {
-          app.page++;
-          updateNav();
-        }
-      });
-
-      app.eventBus.on('pagechanging', (e) => {
-        document.getElementById('pageNum').textContent = e.pageNumber;
-      });
-    });
-  });
-</script>
   </body>
 </html>
