@@ -17067,13 +17067,13 @@ function webViewerLoad() {
 document.blockUnblockOnload?.(true);
 if (document.readyState === "interactive" || document.readyState === "complete") {
   webViewerLoad();
+  PDFViewerApplication.eventBus._on("documentloaded", function () {
+    PDFViewerApplication.requestPresentationMode();
+  });
 } else {
   document.addEventListener("DOMContentLoaded", webViewerLoad, true);
 }
-// Trigger presentation mode automatically when the document is loaded
-PDFViewerApplication.eventBus._on("documentloaded", function () {
-  PDFViewerApplication.requestPresentationMode();
-});
+
 export { PDFViewerApplication, AppConstants as PDFViewerApplicationConstants, AppOptions as PDFViewerApplicationOptions };
 
 //# sourceMappingURL=viewer.mjs.map
