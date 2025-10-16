@@ -1,3 +1,95 @@
+/* Minimal controls integration */
+function initMinimalControls() {
+  const app = (typeof window !== "undefined" ? window.PDFViewerApplication : undefined) || (typeof PDFViewerApplication !== "undefined" ? PDFViewerApplication : undefined);
+  if (!app) return;
+
+  const container = document.getElementById("viewerContainer") || document.body;
+  if (!container) return;
+  if (!document.getElementById("minimalControls")) {
+    const controls = document.createElement("div");
+    controls.id = "minimalControls";
+    controls.innerHTML = `
+      <button id="prevPage" aria-label="Previous page" type="button">Previous</button>
+      <span id="pageIndicator" aria-live="polite" aria-atomic="true"></span>
+      <button id="nextPage" aria-label="Next page" type="button">Next</button>
+    `;
+    container.insertAdjacentElement("afterend", controls);
+  }
+
+  const prev = document.getElementById("prevPage");
+  const next = document.getElementById("nextPage");
+  const indicator = document.getElementById("pageIndicator");
+  if (!prev || !next || !indicator) return;
+
+  function getTotalPages() {
+    return app.pdfDocument ? app.pdfDocument.numPages : (app.pdfViewer?.pagesCount || 0);
+  }
+
+  function getCurrentPage() {
+    return app.page || app.pdfViewer?.currentPageNumber || 1;
+  }
+
+  function setPage(num) {
+    app.page = num;
+  }
+
+  function updatePageIndicator() {
+    const total = getTotalPages();
+    const current = getCurrentPage();
+    indicator.textContent = total ? `${current} of ${total}` : "";
+    prev.disabled = current <= 1;
+    next.disabled = total > 0 && current >= total;
+  }
+
+  prev.addEventListener("click", () => {
+    const newPage = Math.max(1, getCurrentPage() - 1);
+    setPage(newPage);
+  });
+  next.addEventListener("click", () => {
+    const total = Math.max(1, getTotalPages());
+    const newPage = Math.min(total, getCurrentPage() + 1);
+    setPage(newPage);
+  });
+
+  // Keyboard navigation - left/right arrows
+  document.addEventListener("keydown", (e) => {
+    const tag = document.activeElement && document.activeElement.tagName.toLowerCase();
+    if (tag === "input" || tag === "textarea") return;
+    if (e.key === "ArrowLeft") prev.click();
+    if (e.key === "ArrowRight") next.click();
+  });
+
+  // Touch swipe handlers - simple implementation
+  let touchStartX = null;
+  const swipeTarget = document.getElementById("viewerContainer") || document.body;
+  swipeTarget.addEventListener("touchstart", (e) => { if (e.touches && e.touches[0]) touchStartX = e.touches[0].clientX; }, { passive: true });
+  swipeTarget.addEventListener("touchend", (e) => {
+    if (touchStartX === null) return;
+    const touchEndX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : null;
+    if (touchEndX === null) return;
+    const dx = touchEndX - touchStartX;
+    if (Math.abs(dx) > 50) { if (dx > 0) prev.click(); else next.click(); }
+    touchStartX = null;
+  }, { passive: true });
+
+  // Update indicator on relevant events
+  const eb = app.eventBus;
+  eb?._on?.("pagesloaded", updatePageIndicator);
+  eb?._on?.("pagechanging", updatePageIndicator);
+  eb?._on?.("pagesinit", updatePageIndicator);
+  updatePageIndicator();
+}
+
+try {
+  const appRef = (typeof window !== "undefined" ? window.PDFViewerApplication : undefined) || (typeof PDFViewerApplication !== "undefined" ? PDFViewerApplication : undefined);
+  if (appRef && appRef.initializedPromise) {
+    appRef.initializedPromise.then(() => initMinimalControls());
+  } else {
+    document.addEventListener("DOMContentLoaded", () => initMinimalControls());
+  }
+} catch (e) {
+  // Swallow to avoid breaking core viewer on init errors
+}
 /**
  * @licstart The following is the entire license notice for the
  * JavaScript code in this page
