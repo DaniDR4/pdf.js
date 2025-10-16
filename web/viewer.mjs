@@ -22,15 +22,19 @@ function initMinimalControls() {
   if (!prev || !next || !indicator) return;
 
   function getTotalPages() {
-    return app.pdfDocument ? app.pdfDocument.numPages : (app.pdfViewer?.pagesCount || 0);
+    return app.pdfViewer?.pagesCount || app.pdfDocument?.numPages || 0;
   }
 
   function getCurrentPage() {
-    return app.page || app.pdfViewer?.currentPageNumber || 1;
+    return app.pdfViewer?.currentPageNumber || app.page || 1;
   }
 
   function setPage(num) {
-    app.page = num;
+    if (app.pdfViewer) {
+      app.pdfViewer.currentPageNumber = num;
+    } else {
+      app.page = num;
+    }
   }
 
   function updatePageIndicator() {
@@ -77,6 +81,7 @@ function initMinimalControls() {
   eb?._on?.("pagesloaded", updatePageIndicator);
   eb?._on?.("pagechanging", updatePageIndicator);
   eb?._on?.("pagesinit", updatePageIndicator);
+  eb?._on?.("pagerendered", updatePageIndicator);
   updatePageIndicator();
 }
 
